@@ -75,7 +75,14 @@ ENV KALI_PKG=kali-linux-${KALI_PACKAGE}
 # #####################################################
 # install packages that we always want
 # #####################################################
+RUN apt update -q --fix-missing  
 
+RUN apt -y install --no-install-recommends ca-certificates
+
+# Fix a problem where downloading of all apt packages would
+# fail with "Unable to connect to..."
+# src: https://unix.stackexchange.com/a/429734
+RUN sed -i 's|http://|https://|g' /etc/apt/sources.list
 RUN apt update -q --fix-missing  
 RUN apt upgrade -y
 RUN apt -y install --no-install-recommends sudo wget curl dbus-x11 xinit openssh-server ${DESKTOP_PKG}
