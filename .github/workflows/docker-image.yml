@@ -6,6 +6,40 @@ on:
   pull_request:
     branches: ["main"]
 
+env:
+  # RDP port
+  XRDP_PORT: 13389
+
+  # VNC ports
+  XVNC_DISPLAY: 8
+  XVNC_PORT: 5908
+
+  # SSH port
+  XSSH_PORT: 20022
+
+  # Container desktop environment
+  # Options: "xfce" "mate" "kde" "e17" "gnome" "i3" "i3-gaps" "live" "lxde"
+  XDESKTOP_ENVIRONMENT: "xfce"
+
+  # Remote access metohod for desktop
+  # Options: "vnc" "rdp" "x2go"
+  # Once rdp is up, it may take a moment to load
+  # Note: Only xfce works with rdp right now
+  XREMOTE_ACCESS: "rdp"
+
+  # Kali packages
+  # Options: "arm" "core" "default" "everything" "firmware" "headless" "labs" "large" "nethunter"
+  XKALI_PKG: "core"
+
+  # Name for local custom Docker image
+  DOCKERIMG: "tfalesni/kali-linux"
+
+  # Username for container user
+  USERNAME: "user"
+
+  # Password for container user
+  PASSWORD: "password123"
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -13,6 +47,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: What
+        run: echo "BRANCH=${GITHUB_REF##*/}" >> $GITHUB_ENV
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
@@ -25,4 +61,15 @@ jobs:
       - uses: actions/checkout@v3
       - name: Build and push
         uses: docker/build-push-action@v5
-        run: export $(grep -v '^#' env_template_m1 | xargs) && docker buildx build --platform linux/arm64,linux/amd64 -t $DOCKERIMG:${GITHUB_REF##*/} --build-arg DESKTOP_ENVIRONMENT=$XDESKTOP_ENVIRONMENT --build-arg REMOTE_ACCESS=$XREMOTE_ACCESS --build-arg KALI_PACKAGE=$XKALI_PKG --build-arg RDP_PORT=$XRDP_PORT --build-arg BUILD_ENV=$XBUILD_PLATFORM --build-arg UNAME=$USERNAME --build-arg UPASS=$PASSWORD .
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ env.DOCKERIMG }}:${{ env.BRANCH }}
+          build_args: |
+            DESKTOP_ENVIRONMENT=${{ env.XDESKTOP_ENVIRONMENT }}
+            REMOTE_ACCESS=${{ env.XREMOTE_ACCESS }}
+            KALI_PACKAGE=${{ env.XKALI_PKG }}
+            RDP_PORT=${{ env.XRDP_PORT }}
+            UNAME=${{ env.USERNAME }}
+            UPASS=${{ env.PASSWORD }}
