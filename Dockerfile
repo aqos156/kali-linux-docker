@@ -101,6 +101,25 @@ RUN chmod 755 /startkali.sh
 
 RUN apt -y install --no-install-recommends ${KALI_PKG}
 
+#############################################################
+# PA211 extenisons of pacakges required for the course
+#############################################################
+
+RUN apt -y install --no-install-recommends burpsuite \
+    zaproxy \
+    wordlists \
+    dirb \
+    gobuster \
+    feroxbuster \
+    dirbuster \
+    ffuf \
+    wfuzz \
+    whatweb \
+    sqlmap \
+    wpscan \
+    nuclei
+
+
 # #####################################################
 # create the non-root kali user
 # #####################################################
