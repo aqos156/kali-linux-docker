@@ -1,0 +1,38 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build the Docker image
+      run: export $(grep -v '^#' env | xargs) && docker buildx build --platform linux/arm64,linux/amd64 \
+          	-t $DOCKERIMG:${GITHUB_REF##*/} \
+          	--build-arg DESKTOP_ENVIRONMENT=$XDESKTOP_ENVIRONMENT \
+          	--build-arg REMOTE_ACCESS=$XREMOTE_ACCESS \
+          	--build-arg KALI_PACKAGE=$XKALI_PKG \
+          	--build-arg RDP_PORT=$XRDP_PORT \
+          	--build-arg BUILD_ENV=$XBUILD_PLATFORM \
+          	--build-arg UNAME=$USERNAME \
+          	--build-arg UPASS=$PASSWORD \
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+    -
+      name: Build and push
+      uses: docker/build-push-action@v5
+      with:
+        push: true
+        tags: ${{ secrets.DOCKERHUB_USERNAME }}/$DOCKERIMG:${GITHUB_REF##*/}
