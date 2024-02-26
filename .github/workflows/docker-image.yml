@@ -66,7 +66,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ env.DOCKERIMG }}:${{ env.BRANCH }}
-          build_args: |
+          build-args: |
             DESKTOP_ENVIRONMENT=${{ env.XDESKTOP_ENVIRONMENT }}
             REMOTE_ACCESS=${{ env.XREMOTE_ACCESS }}
             KALI_PACKAGE=${{ env.XKALI_PKG }}
