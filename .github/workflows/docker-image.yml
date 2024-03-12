@@ -29,7 +29,7 @@ env:
 
   # Kali packages
   # Options: "arm" "core" "default" "everything" "firmware" "headless" "labs" "large" "nethunter"
-  XKALI_PKG: "core"
+  XKALI_PKG: "large"
 
   # Name for local custom Docker image
   DOCKERIMG: "tfalesni/kali-linux"
@@ -64,7 +64,7 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ env.DOCKERIMG }}:${{ env.BRANCH }}
+          tags: ${{ env.DOCKERIMG }}:large #${{ env.BRANCH }}
           cache-from: type=registry,ref=${{ env.DOCKERIMG }}:${{ env.BRANCH }}
           cache-to: type=inline
           build-args: |
