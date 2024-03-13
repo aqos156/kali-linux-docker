@@ -106,18 +106,32 @@ RUN apt -y install --no-install-recommends ${KALI_PKG}
 #############################################################
 
 RUN apt -y install --no-install-recommends burpsuite \
-    zaproxy \
-    wordlists \
-    dirb \
-    gobuster \
-    feroxbuster \
-    dirbuster \
-    ffuf \
-    wfuzz \
-    whatweb \
-    sqlmap \
-    wpscan \
-    nuclei
+  zaproxy \
+  wordlists \
+  dirb \
+  gobuster \
+  feroxbuster \
+  dirbuster \
+  ffuf \
+  wfuzz \
+  whatweb \
+  sqlmap \
+  wpscan \
+  nuclei \
+  burpsuite \ 
+  dirbuster \
+  bind9-host \
+  sqlmap \
+  ffuf \
+  hydra \
+  sqlmap \
+  vim \
+  nano \
+  wget \
+  nmap \
+  less \
+  net-tools \
+  inetutils-ping
 
 
 # #####################################################
@@ -146,9 +160,9 @@ RUN echo "Port $SSH_PORT" >>/etc/ssh/sshd_config
 
 RUN rm /etc/xdg/autostart/xfce4-power-manager.desktop >/dev/null 2>&1
 RUN if [ -e /etc/xdg/xfce4/panel/default.xml ] ; \
-    then \
-        sed -i s/power/fail/ /etc/xdg/xfce4/panel/default.xml ; \
-    fi
+  then \
+  sed -i s/power/fail/ /etc/xdg/xfce4/panel/default.xml ; \
+  fi
 
 # #############################
 # install and configure x2go
@@ -156,10 +170,10 @@ RUN if [ -e /etc/xdg/xfce4/panel/default.xml ] ; \
 # #############################
 
 RUN if [ "xx2go" = "x${REMOTE_ACCESS}" ]  ; \
-    then \
-        apt -y install --no-install-recommends x2goserver ; \
-        echo "/etc/init.d/x2goserver start" >> /startkali.sh ; \
-    fi
+  then \
+  apt -y install --no-install-recommends x2goserver ; \
+  echo "/etc/init.d/x2goserver start" >> /startkali.sh ; \
+  fi
 
 # #############################
 # install and configure xrdp
@@ -169,18 +183,18 @@ RUN if [ "xx2go" = "x${REMOTE_ACCESS}" ]  ; \
 # #############################
 
 RUN if [ "xrdp" = "x${REMOTE_ACCESS}" ] ; \
-    then \
-            apt -y install --no-install-recommends xorg xorgxrdp xrdp ; \
-            echo "rm -rf /var/run/xrdp >/dev/null 2>&1" >> /startkali.sh ; \
-            echo "/etc/init.d/xrdp start" >> /startkali.sh ; \
-            sed -i s/^port=3389/port=${RDP_PORT}/ /etc/xrdp/xrdp.ini ; \
-            adduser xrdp ssl-cert ; \
-            if [ "xfce" = "${DESKTOP_ENVIRONMENT}" ] ; \
-            then \
-                echo xfce4-session > /home/${UNAME}/.xsession ; \
-                chmod +x /home/${UNAME}/.xsession ; \
-            fi ; \
-    fi
+  then \
+  apt -y install --no-install-recommends xorg xorgxrdp xrdp ; \
+  echo "rm -rf /var/run/xrdp >/dev/null 2>&1" >> /startkali.sh ; \
+  echo "/etc/init.d/xrdp start" >> /startkali.sh ; \
+  sed -i s/^port=3389/port=${RDP_PORT}/ /etc/xrdp/xrdp.ini ; \
+  adduser xrdp ssl-cert ; \
+  if [ "xfce" = "${DESKTOP_ENVIRONMENT}" ] ; \
+  then \
+  echo xfce4-session > /home/${UNAME}/.xsession ; \
+  chmod +x /home/${UNAME}/.xsession ; \
+  fi ; \
+  fi
 
 # ###########################################################
 # install and configure tigervnc-standalone-server
@@ -199,20 +213,20 @@ RUN if [ "xrdp" = "x${REMOTE_ACCESS}" ] ; \
 # ###########################################################
 
 RUN if [ "xvnc" = "x${REMOTE_ACCESS}" ] ; \
-    then \
-        apt -y install --no-install-recommends tigervnc-standalone-server tigervnc-tools; \
-        echo "/usr/libexec/tigervncsession-start :${VNC_DISPLAY} " >> /startkali.sh ; \
-        echo "echo -e '${UPASS}' | vncpasswd -f >/home/${UNAME}/.vnc/passwd" >> /startkali.sh  ;\
-        echo "while true; do sudo -u ${UNAME} vncserver -fg -v ; done" >> /startkali.sh ; \
-        echo ":${VNC_DISPLAY}=${UNAME}" >>/etc/tigervnc/vncserver.users ;\
-        echo '$localhost = "no";' >>/etc/tigervnc/vncserver-config-mandatory ;\
-        echo '$SecurityTypes = "VncAuth";' >>/etc/tigervnc/vncserver-config-mandatory ;\
-        mkdir -p /home/${UNAME}/.vnc ;\
-        chown ${UNAME}:${UNAME} /home/${UNAME}/.vnc ;\
-        touch /home/${UNAME}/.vnc/passwd ;\
-        chown ${UNAME}:${UNAME} /home/${UNAME}/.vnc/passwd ;\
-        chmod 600 /home/${UNAME}/.vnc/passwd ;\
-    fi
+  then \
+  apt -y install --no-install-recommends tigervnc-standalone-server tigervnc-tools; \
+  echo "/usr/libexec/tigervncsession-start :${VNC_DISPLAY} " >> /startkali.sh ; \
+  echo "echo -e '${UPASS}' | vncpasswd -f >/home/${UNAME}/.vnc/passwd" >> /startkali.sh  ;\
+  echo "while true; do sudo -u ${UNAME} vncserver -fg -v ; done" >> /startkali.sh ; \
+  echo ":${VNC_DISPLAY}=${UNAME}" >>/etc/tigervnc/vncserver.users ;\
+  echo '$localhost = "no";' >>/etc/tigervnc/vncserver-config-mandatory ;\
+  echo '$SecurityTypes = "VncAuth";' >>/etc/tigervnc/vncserver-config-mandatory ;\
+  mkdir -p /home/${UNAME}/.vnc ;\
+  chown ${UNAME}:${UNAME} /home/${UNAME}/.vnc ;\
+  touch /home/${UNAME}/.vnc/passwd ;\
+  chown ${UNAME}:${UNAME} /home/${UNAME}/.vnc/passwd ;\
+  chmod 600 /home/${UNAME}/.vnc/passwd ;\
+  fi
 
 # ###########################################################
 # The /startkali.sh script may terminate, i.e. if we only 
