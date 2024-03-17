@@ -131,8 +131,12 @@ RUN apt -y install --no-install-recommends burpsuite \
   nmap \
   less \
   net-tools \
-  inetutils-ping
-
+  inetutils-ping \
+  dnsutils \
+  smbmap \
+  smbclient \
+  zip \
+  git
 
 # #####################################################
 # create the non-root kali user
