@@ -105,13 +105,12 @@ RUN apt -y install --no-install-recommends ${KALI_PKG}
 # PA211 extenisons of pacakges required for the course
 #############################################################
 
-RUN apt -y install --no-install-recommends burpsuite \
+RUN apt -y install --no-install-recommends \
   zaproxy \
   wordlists \
   dirb \
   gobuster \
   feroxbuster \
-  dirbuster \
   ffuf \
   wfuzz \
   whatweb \
@@ -122,9 +121,7 @@ RUN apt -y install --no-install-recommends burpsuite \
   dirbuster \
   bind9-host \
   sqlmap \
-  ffuf \
   hydra \
-  sqlmap \
   vim \
   nano \
   wget \
@@ -136,7 +133,9 @@ RUN apt -y install --no-install-recommends burpsuite \
   smbmap \
   smbclient \
   zip \
-  git
+  git \
+  jq \
+  cifs-utils
 
 # #####################################################
 # create the non-root kali user
