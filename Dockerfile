@@ -135,7 +135,8 @@ RUN apt -y install --no-install-recommends \
   zip \
   git \
   jq \
-  cifs-utils
+  cifs-utils \
+  telnet
 
 # #####################################################
 # create the non-root kali user
