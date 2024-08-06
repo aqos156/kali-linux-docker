@@ -32,9 +32,6 @@ variables:
   # Password for container user
   PASSWORD: "password123"
 
-  # Registry URL and image name
-  REGISTRY_URL: $CI_REGISTRY_IMAGE
-
 build:
   stage: build
   tags:
@@ -43,14 +40,14 @@ build:
   services:
     - docker:dind
   script:
-    - echo "BRANCH=$(echo $CI_COMMIT_REF_NAME)" >> .env
+    - echo "BRANCH=$(echo test)" >> .env
     - export $(cat .env | xargs)
     - |
       docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
       docker buildx create --use
       echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
-      docker buildx build --platform linux/amd64,linux/arm64 --push -t $REGISTRY_URL:$CI_COMMIT_REF_NAME \
-        --cache-from type=registry,ref=$REGISTRY_URL:$CI_COMMIT_REF_NAME \
+      docker buildx build --platform linux/amd64,linux/arm64 --push -t $CI_REGISTRY_IMAGE:$BRANCH \
+        --cache-from type=registry,ref=$CI_REGISTRY_IMAGE:$BRANCH \
         --cache-to type=inline \
         --build-arg DESKTOP_ENVIRONMENT=$XDESKTOP_ENVIRONMENT \
         --build-arg REMOTE_ACCESS=$XREMOTE_ACCESS \
