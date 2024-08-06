@@ -1,0 +1,61 @@
+stages:
+  - build
+
+variables:
+  # RDP port
+  XRDP_PORT: 13389
+
+  # VNC ports
+  XVNC_DISPLAY: 8
+  XVNC_PORT: 5908
+
+  # SSH port
+  XSSH_PORT: 20022
+
+  # Container desktop environment
+  # Options: "xfce" "mate" "kde" "e17" "gnome" "i3" "i3-gaps" "live" "lxde"
+  XDESKTOP_ENVIRONMENT: "xfce"
+
+  # Remote access method for desktop
+  # Options: "vnc" "rdp" "x2go"
+  # Once rdp is up, it may take a moment to load
+  # Note: Only xfce works with rdp right now
+  XREMOTE_ACCESS: "rdp"
+
+  # Kali packages
+  # Options: "arm" "core" "default" "everything" "firmware" "headless" "labs" "large" "nethunter"
+  XKALI_PKG: "core"
+
+  # Username for container user
+  USERNAME: "xuser"
+
+  # Password for container user
+  PASSWORD: "password123"
+
+  # Registry URL and image name
+  REGISTRY_URL: $CI_REGISTRY_IMAGE
+
+build:
+  stage: build
+  tags:
+    - image-builder
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - echo "BRANCH=$(echo $CI_COMMIT_REF_NAME)" >> .env
+    - export $(cat .env | xargs)
+    - |
+      docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+      docker buildx create --use
+      echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+      docker buildx build --platform linux/amd64,linux/arm64 --push -t $REGISTRY_URL:$CI_COMMIT_REF_NAME \
+        --cache-from type=registry,ref=$REGISTRY_URL:$CI_COMMIT_REF_NAME \
+        --cache-to type=inline \
+        --build-arg DESKTOP_ENVIRONMENT=$XDESKTOP_ENVIRONMENT \
+        --build-arg REMOTE_ACCESS=$XREMOTE_ACCESS \
+        --build-arg KALI_PACKAGE=$XKALI_PKG \
+        --build-arg RDP_PORT=$XRDP_PORT \
+        --build-arg UNAME=$USERNAME \
+        --build-arg UPASS=$PASSWORD \
+        .
