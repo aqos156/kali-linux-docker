@@ -2,12 +2,12 @@
 # onemarcfifty/kali-linux
 # #####################################################
 #
-# This Dockerfile will build a Kali Linux Docker 
+# This Dockerfile will build a Kali Linux Docker
 # image with a graphical environment
 #
 # It loads the following variables from the env file:
-# 
-#  - Ports to use for VNC, SSH, and RDP 
+#
+#  - Ports to use for VNC, SSH, and RDP
 #    (RDP_PORT, VNC_DISPLAY, VNC_PORT, SSH_PORT)
 #  - Desktop environment(DESKTOP_ENVIRONMENT)
 #  - Remote access software (REMOTE_ACCESS)
@@ -16,7 +16,7 @@
 #  - Build platform (BUILD_PLATFORM)
 #  - Local Docker image name (DockerIMG)
 #  - Docker container name (CONTAINER)
-#  - Host directory to mount as volume 
+#  - Host directory to mount as volume
 #  - Container directory for volume mount (HOSTDIR)
 #  - Container username (USERNAME)
 #  - Container user password
@@ -27,7 +27,9 @@
 #
 # #####################################################
 
-FROM kalilinux/kali-rolling
+ARG KALI_IMAGE_BASE_TAG
+
+FROM gitlab.fi.muni.cz:5050/cybersec/infra/images/kali/kali-rolling-base:${KALI_IMAGE_BASE_TAG:-20240811}
 
 ARG DESKTOP_ENVIRONMENT
 ARG REMOTE_ACCESS
@@ -44,7 +46,7 @@ ENV DEBIAN_FRONTEND noninteractive
 # #####################################################
 # the desktop environment to use
 # if it is null then it will default to xfce
-# valid choices are 
+# valid choices are
 # e17, gnome, i3, i3-gaps, kde, live, lxde, mate, xfce
 # #####################################################
 
@@ -62,7 +64,7 @@ ENV REMOTE_ACCESS=${REMOTE_ACCESS:-x2go}
 # #####################################################
 # the kali packages to install
 # if it is null then it will default to "default"
-# valid choices are arm, core, default, everything, 
+# valid choices are arm, core, default, everything,
 # firmware, headless, labs, large, nethunter
 # #####################################################
 
@@ -72,7 +74,7 @@ ENV KALI_PKG=kali-linux-${KALI_PACKAGE}
 # #####################################################
 # install packages that we always want
 # #####################################################
-RUN apt update -q --fix-missing  
+RUN apt update -q --fix-missing
 
 RUN apt -y install --no-install-recommends ca-certificates
 
@@ -80,7 +82,7 @@ RUN apt -y install --no-install-recommends ca-certificates
 # fail with "Unable to connect to..."
 # src: https://unix.stackexchange.com/a/429734
 RUN sed -i 's|http://|https://|g' /etc/apt/sources.list
-RUN apt update -q --fix-missing  
+RUN apt update -q --fix-missing
 RUN apt upgrade -y
 RUN apt -y install --no-install-recommends sudo wget curl dbus-x11 xinit openssh-server ${DESKTOP_PKG}
 RUN apt -y install locales
@@ -117,7 +119,7 @@ RUN apt -y install --no-install-recommends \
   sqlmap \
   wpscan \
   nuclei \
-  burpsuite \ 
+  burpsuite \
   dirbuster \
   bind9-host \
   sqlmap \
@@ -149,10 +151,10 @@ RUN echo "${UNAME}:${UPASS}" | chpasswd
 # change the ssh port in /etc/ssh/sshd_config
 # When you use the bridge network, then you would
 # not have to do that. You could rather add a port
-# mapping argument such as -p 2022:22 to the 
+# mapping argument such as -p 2022:22 to the
 # Docker create command. But we might as well
 # use the host network and port 22 might be taken
-# on the Docker host. Hence we change it 
+# on the Docker host. Hence we change it
 # here inside the container
 # #####################################################
 
@@ -206,13 +208,13 @@ RUN if [ "xrdp" = "x${REMOTE_ACCESS}" ] ; \
 # this needs a bit more tweaking than the other protocols
 # we need to set the mandatory security options,
 # the password for the connection, the port to use
-# and also define the ${UNAME} to be used for the 
+# and also define the ${UNAME} to be used for the
 # screen VNC_DISPLAY
 # the password seems to be overwritten so I am hard
-# setting it in the /startkali.sh script each time 
+# setting it in the /startkali.sh script each time
 # After running tigervncsession-start, the session will
 # terminate once the user logs out. Therefore
-# we do a sudo -u ${UNAME} vncserver in an endless loop 
+# we do a sudo -u ${UNAME} vncserver in an endless loop
 # afterwords. This way we always have a running vnc server
 # ###########################################################
 
@@ -233,9 +235,9 @@ RUN if [ "xvnc" = "x${REMOTE_ACCESS}" ] ; \
   fi
 
 # ###########################################################
-# The /startkali.sh script may terminate, i.e. if we only 
+# The /startkali.sh script may terminate, i.e. if we only
 # have statements inside it like /etc/init.d/xxx start
-# then once the startscript has finished, the container 
+# then once the startscript has finished, the container
 # would stop. We want to keep it running though.
 # therefore I just call /bin/bash at the end of the start
 # script. This will not terminate and keep the container

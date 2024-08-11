@@ -1,8 +1,9 @@
 stages:
   - build
-  - check_and_retag
 
 variables:
+  XKALI_IMAGE_BASE_TAG: "20240811"
+
   # RDP port
   XRDP_PORT: 13389
 
@@ -66,31 +67,3 @@ build:
         --build-arg UNAME=$USERNAME \
         --build-arg UPASS=$PASSWORD \
         .
-
-check_and_retag:
-  stage: check_and_retag
-  tags:
-    - image-builder
-  image: docker:latest
-  services:
-    - docker:dind
-  before_script:
-    - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
-    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-    - docker buildx create --use
-  script:
-    - DOCKER_IMAGE_NAME="kalilinux/kali-rolling"
-    - GITLAB_REGISTRY_IMAGE="$CI_REGISTRY_IMAGE/kali-rolling"
-    - CURRENT_DATE=$(date +%Y%m%d)
-    - docker pull $DOCKER_IMAGE_NAME
-    - DOCKER_IMAGE_ID=$(docker images --no-trunc --quiet $DOCKER_IMAGE_NAME | head -n 1)
-    - "echo Docker Image ID: $DOCKER_IMAGE_ID"
-    - |
-      if docker manifest inspect $GITLAB_REGISTRY_IMAGE | grep -q "$DOCKER_IMAGE_ID"; then
-        echo "Image exists already in GitLab Registry. Skipping, use the latest date tag of the image.";
-      else
-        echo "Image does not exist in GitLab Registry, retagging as and pushing...";
-        docker buildx imagetools create -t $GITLAB_REGISTRY_IMAGE:$CURRENT_DATE $DOCKER_IMAGE_NAME:amd64;
-        docker buildx imagetools create --append -t $GITLAB_REGISTRY_IMAGE:$CURRENT_DATE $DOCKER_IMAGE_NAME:arm64;
-      fi
-  when: manual
