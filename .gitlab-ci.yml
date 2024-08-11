@@ -62,6 +62,7 @@ build:
         --build-arg REMOTE_ACCESS=$XREMOTE_ACCESS \
         --build-arg KALI_PACKAGE=$XKALI_PKG \
         --build-arg RDP_PORT=$XRDP_PORT \
+        --build-arg RDP_PORT=$XSSH_PORT \
         --build-arg UNAME=$USERNAME \
         --build-arg UPASS=$PASSWORD \
         .
