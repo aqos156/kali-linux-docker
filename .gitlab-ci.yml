@@ -42,11 +42,19 @@ build:
   script:
     - echo "BRANCH=$(echo test)" >> .env
     - export $(cat .env | xargs)
+    # Provenance false is used to circumvent buildx push issue on gitlab container registry
+    # more at: https://gitlab.com/gitlab-org/gitlab/-/issues/388865
+    # However, this is apparently fixed in the new "Next generation" container registry which
+    # is available in gitlab 17.3.
     - |
       docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
       docker buildx create --use
       echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
-      docker buildx build --platform linux/amd64,linux/arm64 --push -t $CI_REGISTRY_IMAGE:$BRANCH \
+      docker buildx build \
+        --provenance false \
+        --platform linux/amd64,linux/arm64 \
+        --push \
+        -t $CI_REGISTRY_IMAGE:$BRANCH \
         --cache-from type=registry,ref=$CI_REGISTRY_IMAGE:$BRANCH \
         --cache-to type=inline \
         --build-arg DESKTOP_ENVIRONMENT=$XDESKTOP_ENVIRONMENT \
