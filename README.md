@@ -1,74 +1,54 @@
-# kali-linux-docker
+# Kali Linux Container image
 
-![language](https://img.shields.io/github/languages/top/onemarcfifty/kali-linux-docker)    ![License](https://img.shields.io/github/license/onemarcfifty/kali-linux-docker)    ![Last Commit](https://img.shields.io/github/last-commit/onemarcfifty/kali-linux-docker)     ![FileCount](https://img.shields.io/github/directory-file-count/onemarcfifty/kali-linux-docker)    ![Stars](https://img.shields.io/github/stars/onemarcfifty/kali-linux-docker)    ![Forks](https://img.shields.io/github/forks/onemarcfifty/kali-linux-docker)
+> Forked from https://github.com/onemarcfifty/kali-linux-docker
 
-A Docker solution for running a local, customizable full Kali Linux distribution.
+An optimized Kali Linux image for cybersecurity courses at FI MUNI.
 
-Configure the container with the following options:
+Configuration of the container includes:
 
-- Exposed ports (vnc, x2go, rdp, ssh)
-- Desktop environment(xfce, kde, gnome, mate, etc.)
-- Remote access software (vnc, x2go, rdp)
+- Exposed ports (rdp, ssh)
+- XFCE Desktop environment with RDP for remote access
 - Kali packages to install (core, default everything, etc.)
-- Network configuration  (host, bridge)
-- Build platform (amd64, arm64, etc.)
-- Local Docker image name
-- Docker container name
-- Host directory to mount as volume
-- Container directory for volume mount
 - Container username
 - Container user password
+- AMD64 and ARM64 multiplatfrom image
 
-## how to build
+## How to develop locally
 
-Download all the files into a subdirectory on Docker host, e.g. /home/marc/kali-linux docker
-then cd into that directory. 
+Clone the repository and run `make` which will print help to all of the commands.
 
-Create a copy of the `env_template` file, and name it `env`. Enter the desired configuration for each variable.
+Run `make build` to build the current image and `make run` to build and run the image in a drop in shell in interactive mode.
 
-Run the build script:
+Default username is `xuser` and password is `password123`. You can also connect locally via RDP using the port 13389 or through SSH on 20022
 
-    `sudo ./build`
+## Automatic builds using gitlab pipelines
 
-If a variable isn't set in the `env` file, the build script asks for all the options then:
-1. builds the local Docker image
-2. Creates the container from the created image
-3. Starts the new container
+> The image build takes about an hour mostly due to having the multiplatform build.
 
-So in a nutshell, the complete command sequence in a Linux shell to install on a Debian or Ubuntu Linux would be:
+The pipeline consists of two parts:
+  1. [https://gitlab.fi.muni.cz/cybersec/infra/images/kali/-/tree/kalilinux-synchronization?ref_type=heads](kalilinux-synchronization)
+  2. All other branches
 
-    apt update
-    apt install git
-    git clone https://github.com/onemarcfifty/kali-linux-docker.git
-    cd kali-linux-docker
-    cp env_template env
-    [fill_in_env_variables]
-    sudo ./build
+The `kalilinux-synchronization` branch is responsible for synchronizing the rolling kali linux image from docker hub to our container registry to have an atomic starting point for the kali linux image. Documentation to the synchronization process is in the [https://gitlab.fi.muni.cz/cybersec/infra/images/kali/-/blob/kalilinux-synchronization/README.md?ref_type=heads](kalilinux-synchronization/README.md).
 
-## how to use
+The base Kali Linux image is at `gitlab.fi.muni.cz:5050/cybersec/infra/images/kali/kali-rolling-base:YYYYMMDD` where the end tag is the day of synchronization (when the pipeline ran)
 
-Connect to the container by launching the software for the configured remote access technique or via SSH. The default ports defined in the script are as follows:
+> The synchronization should be done semi-regularly (probably at least one every three months) as the apt packages can stop working between major Kali Linux version upgrades.
 
-- RDP on port 13389
-- ssh / x2goserver on port 20022
-- vnc on port 5908 / display :8
+Other branches coming from the `main` branch are automatically build and the resulting image is pushed to the container registry `gitlab.fi.muni.cz:5050/cybersec/infra/images/kali/kali:BRANCH` where the end tag is the name of the branch (use only numbers and letters in the names of branches for this to work)
 
-All user name and password are configured in the `env` file or promted by the build script.
+> Do not forget to manually delete the unused images from the container registry, after a branch is deleted.
 
-## more info
+### How to upgrade to new kali linux base image
 
-Find all details on [my youtube channel](https://www.youtube.com/onemarcfifty)
+Follow the build process described in the [https://gitlab.fi.muni.cz/cybersec/infra/images/kali/-/blob/kalilinux-synchronization/README.md?ref_type=heads](kalilinux-synchronization/README.md). Afterwards, modify the `.gitlab-ci.yml` and `Makefile` to include the new version tag in the `XKALI_IMAGE_BASE_TAG` variable.
 
-You may also want to join [THE ONEMARCFIFTY DISCORD SERVER](https://discord.com/invite/DXnfBUG) and chat life with me and/or others - cu there ;-)
+### Suggestions for use
 
-## known issues
+I would personally create a two stage process where main is the *"development"* branch where you can test out things directly, or create development branches which are automatically build.
 
-- RDP seems to only work with XFCE desktop
-- Not all combinations of remote access protocols with various desktop environments are working
+Afterwards, I would have a `production` branch or something like `fall24` branch which would contain the production image environment for the semester. However, having an image per semester would require in future to update all of the course materials to include the new branch.
 
-## troubleshooting/tips
-- When using RDP and XFCE, the desktop will take a moment to load the first time (about five seconds or less)
+## Notes
 
-## TODO
-
-- Disable desktop sleep, screenlock, etc.
+Currently, the `.gitlab-ci.yml` files contains a workaround in the form of argument `--provenance false` to circumvent a [https://gitlab.com/gitlab-org/gitlab/-/issues/388865#workaround](bug in gitlab container registry) which is fixed in the new "Next generation" container registry from Gitlab version 17.3.
