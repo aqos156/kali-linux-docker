@@ -28,7 +28,7 @@ build:
   services:
     - docker:dind
   script:
-    - echo "BRANCH=$(echo test)" >> .env
+    - echo "BRANCH=$(echo $CI_COMMIT_REF_NAME)" >> .env
     - export $(cat .env | xargs)
     # Provenance false is used to circumvent buildx push issue on gitlab container registry
     # more at: https://gitlab.com/gitlab-org/gitlab/-/issues/388865
