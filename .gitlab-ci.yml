@@ -42,8 +42,8 @@ build:
         --provenance false \
         --platform linux/amd64,linux/arm64 \
         --push \
-        -t $CI_REGISTRY_IMAGE:$BRANCH \
-        --cache-from type=registry,ref=$CI_REGISTRY_IMAGE:$BRANCH \
+        -t $CI_REGISTRY_IMAGE/kali:$BRANCH \
+        --cache-from type=registry,ref=$CI_REGISTRY_IMAGE/kali:$BRANCH \
         --cache-to type=inline \
         --build-arg KALI_IMAGE_BASE_TAG=$XKALI_IMAGE_BASE_TAG \
         --build-arg DESKTOP_ENVIRONMENT=$XDESKTOP_ENVIRONMENT \
